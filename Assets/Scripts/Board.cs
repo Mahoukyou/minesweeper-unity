@@ -7,9 +7,14 @@ public class Board : MonoBehaviour
 {
     public Tile tilePrefab;
 
-    public int numberOfBombs;
-    public int numberOfRows;
-    public int numberOfColumns;
+    public int numberOfBombs = 5;
+    public int numberOfRows = 15;
+    public int numberOfColumns = 15;
+
+    public bool generateBombsAfterFirstClick = false;
+    public int spaceBetweenBombsAndFirstClick = 3;
+
+    bool initialized = false;
 
     Tile[,] tiles;
 
@@ -27,16 +32,38 @@ public class Board : MonoBehaviour
     {
         int numberOfTiles = numberOfRows * numberOfColumns;
 
-        return numberOfTiles > 0 && 
-            numberOfBombs > 0 && 
-            numberOfTiles > numberOfBombs;
+        if(numberOfTiles <= 0 || numberOfBombs <= 0)
+        {
+            return false;
+        }
+
+        if(generateBombsAfterFirstClick)
+        {
+            if (spaceBetweenBombsAndFirstClick >= numberOfRows ||
+                spaceBetweenBombsAndFirstClick >= numberOfColumns)
+            {
+                return false;
+            }
+
+            int numberOfSpaceTiles = (int)Mathf.Pow(spaceBetweenBombsAndFirstClick + 2.0f, 2.0f);
+
+            return numberOfTiles - numberOfSpaceTiles > numberOfBombs;
+        }
+
+        return numberOfTiles > numberOfBombs;
     }
 
     void InitBoard()
     {
+        initialized = false;
+
         CreateBoard();
-        PlaceBombs();
-        NotifyNeighboursAboutBombs();
+        if (!generateBombsAfterFirstClick)
+        {
+            PlaceBombs();
+            NotifyNeighboursAboutBombs();
+            initialized = true;
+        }
     }
 
     void CreateBoard()
@@ -67,7 +94,7 @@ public class Board : MonoBehaviour
         GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, numberOfRows * tilePrefabRect.rect.height);
     }
 
-    void PlaceBombs()
+    void PlaceBombs(int clickRow = 0, int clickColumn = 0)
     {
         int bombsLeftToPlace = numberOfBombs;
 
@@ -75,6 +102,15 @@ public class Board : MonoBehaviour
         {
             int row = Random.Range(0, numberOfRows);
             int column = Random.Range(0, numberOfColumns);
+
+            if (generateBombsAfterFirstClick)
+            {
+                if (Mathf.Abs(row - clickRow) < spaceBetweenBombsAndFirstClick ||
+     Mathf.Abs(column - clickColumn) < spaceBetweenBombsAndFirstClick)
+                {
+                    continue;
+                }
+            }
 
             if (tiles[row, column].isBomb)
             {
@@ -121,6 +157,13 @@ public class Board : MonoBehaviour
 
     public void OnUncoverRequested(int row, int column)
     {
+        if(!initialized && generateBombsAfterFirstClick)
+        {
+            PlaceBombs(row, column);
+            NotifyNeighboursAboutBombs();
+            initialized = true;
+        }
+
         Tile tile = tiles[row, column];
         if(tile.isBomb)
         {
