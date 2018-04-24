@@ -66,7 +66,7 @@ public class Board : MonoBehaviour
                 return false;
             }
 
-            int numberOfSpaceTiles = (int)Mathf.Pow(spaceBetweenBombsAndFirstClick + 2.0f, 2.0f);
+            int numberOfSpaceTiles = spaceBetweenBombsAndFirstClick > 0 ? (int)Mathf.Pow(spaceBetweenBombsAndFirstClick + 2.0f, 2.0f) : 0;
 
             return numberOfTiles - numberOfSpaceTiles > amountOfBombs;
         }
@@ -154,8 +154,15 @@ public class Board : MonoBehaviour
 
             if (generateBombsAfterFirstClick)
             {
-                if (Mathf.Abs(row - clickRow) < spaceBetweenBombsAndFirstClick ||
-     Mathf.Abs(column - clickColumn) < spaceBetweenBombsAndFirstClick)
+                if(spaceBetweenBombsAndFirstClick == 0)
+                {
+                    if(row == clickRow && column == clickColumn)
+                    {
+                        continue;
+                    }
+                }
+                else if (Mathf.Abs(row - clickRow) <= spaceBetweenBombsAndFirstClick &&
+                    Mathf.Abs(column - clickColumn) <= spaceBetweenBombsAndFirstClick)
                 {
                     continue;
                 }

@@ -191,8 +191,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numberOfBombs: 55
-  numberOfRows: 15
-  numberOfColumns: 15
+  numberOfRows: 25
+  numberOfColumns: 25
   endGameMenu: {fileID: 1972369562}
   gameBoard: {fileID: 23566080}
 --- !u!4 &159423698
