@@ -38,12 +38,19 @@ public class Tile : MonoBehaviour
 
     public void Init(Board grid, int row, int column)
     {
+        neighbourBombCount = 0;
         this.grid = grid;
 
         this.row = row;
         this.column = column;
 
         ChangeState(State.Normal);
+    }
+
+    public void Move(int row, int column)
+    {
+        this.row = row;
+        this.column = column;
     }
 
     public void OnLeftClick()
@@ -53,7 +60,9 @@ public class Tile : MonoBehaviour
 
     public void SetFlag()
     {
-        if(state == State.Normal)
+        // todo
+
+        if (state == State.Normal)
         {
             ChangeState(State.Flagged);
         }
@@ -93,6 +102,10 @@ public class Tile : MonoBehaviour
         }
 
         state = newState;
+    }
 
+    public bool IsUncovered()
+    {
+        return state == State.Uncovered;
     }
 }

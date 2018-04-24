@@ -5,103 +5,152 @@ using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
+    [SerializeField]
+    struct SizeSettings
+    {
+        int amountOfBombs;
+        int amountOfRows;
+        int amountOfColumns;
+    }
+
+    [SerializeField]
+    struct GenerationSettings
+    {
+        bool generateBombsAfterFirstClick;
+        bool spaceBetweenBombsAndFirstClick;
+    }
+
+
     public Tile tilePrefab;
 
-    public int numberOfBombs = 5;
-    public int numberOfRows = 15;
-    public int numberOfColumns = 15;
+//    SizeSettings sizeSettings;
+
+    int amountOfBombs;
+    int amountOfRows;
+    int amountOfColumns;
 
     public bool generateBombsAfterFirstClick = false;
     public int spaceBetweenBombsAndFirstClick = 3;
 
-    bool initialized = false;
+    public float floodFillUncoverTickTime = 0.1f;
 
-    Tile[,] tiles;
+    bool isInitialized = false;
+    bool isUncoveringTiles = false;
 
-    void Start()
+    Tile[,] tiles = null;
+
+    public void InitializeBoard(int amountOfBombs, int[] boardDimensions)
     {
-        if(!AreSettingsValid())
-        {
-            throw new System.Exception("Board settings are not valid");
-        }
+        this.amountOfBombs = amountOfBombs;
+        amountOfRows = boardDimensions[0];
+        amountOfColumns = boardDimensions[1];
 
-        InitBoard();
+
+        InitializeBoard();
     }
 
     bool AreSettingsValid()
     {
-        int numberOfTiles = numberOfRows * numberOfColumns;
+        int numberOfTiles = amountOfRows * amountOfColumns;
 
-        if(numberOfTiles <= 0 || numberOfBombs <= 0)
+        if(numberOfTiles <= 0 || amountOfBombs <= 0)
         {
             return false;
         }
 
         if(generateBombsAfterFirstClick)
         {
-            if (spaceBetweenBombsAndFirstClick >= numberOfRows ||
-                spaceBetweenBombsAndFirstClick >= numberOfColumns)
+            if (spaceBetweenBombsAndFirstClick >= amountOfRows ||
+                spaceBetweenBombsAndFirstClick >= amountOfColumns)
             {
                 return false;
             }
 
             int numberOfSpaceTiles = (int)Mathf.Pow(spaceBetweenBombsAndFirstClick + 2.0f, 2.0f);
 
-            return numberOfTiles - numberOfSpaceTiles > numberOfBombs;
+            return numberOfTiles - numberOfSpaceTiles > amountOfBombs;
         }
 
-        return numberOfTiles > numberOfBombs;
+        return numberOfTiles > amountOfBombs;
     }
 
-    void InitBoard()
+    void InitializeBoard()
     {
-        initialized = false;
+        if (!AreSettingsValid())
+        {
+            throw new System.Exception("Board settings are not valid");
+        }
 
-        CreateBoard();
+        isInitialized = false;
+
+        InitializeTiles();
         if (!generateBombsAfterFirstClick)
         {
             PlaceBombs();
             NotifyNeighboursAboutBombs();
-            initialized = true;
+            isInitialized = true;
         }
+
+        isUncoveringTiles = false;
     }
 
-    void CreateBoard()
+    void InitializeTiles()
     {
-        
-        // todo, destroy any existing tiles (feom prev game)
-        tiles = new Tile[numberOfRows, numberOfColumns];
+        if (tiles != null)
+        {
+            // for now destroy all, later use pooling etc
+            for (int row = 0; row < amountOfRows; ++row)
+            {
+                for (int column = 0; column < amountOfColumns; ++column)
+                {
+                    Tile tile = GetTile(row, column);
+                    if(tile)
+                    {
+                        Destroy(tile.gameObject);
+                    }
+                }
+            }
+        }
+
+        tiles = new Tile[amountOfRows, amountOfColumns];
 
         RectTransform tilePrefabRect = tilePrefab.GetComponent<RectTransform>();
 
-        for (int row = 0; row < numberOfRows; ++row)
+        for (int row = 0; row < amountOfRows; ++row)
         {
-            for(int column = 0; column < numberOfColumns; ++column)
+            for(int column = 0; column < amountOfColumns; ++column)
             {
                 Tile tile = Instantiate(tilePrefab);
-                tile.Init(this, row, column);
-
                 tile.transform.SetParent(transform, false);
-                tile.GetComponent<RectTransform>().anchoredPosition = new Vector2(column * tilePrefabRect.rect.height, row * tilePrefabRect.rect.width);
 
-                tile.name = "Row: " + row + " - Column: " + column;
+                SetTilePositionInWorld(tile, row, column);
+
+                tile.Init(this, row, column);
                 tiles[row, column] = tile;
             }
         }
 
         // Set the size of this container to desired size of all its childern so it will be centered
-        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, numberOfColumns * tilePrefabRect.rect.width);
-        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, numberOfRows * tilePrefabRect.rect.height);
+        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, amountOfColumns * tilePrefabRect.rect.width);
+        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, amountOfRows * tilePrefabRect.rect.height);
+    }
+
+    void SetTilePositionInWorld(Tile tile, int row, int column)
+    {
+        RectTransform tilePrefabRect = tilePrefab.GetComponent<RectTransform>();
+        tile.GetComponent<RectTransform>().anchoredPosition = new Vector2(column * tilePrefabRect.rect.height, row * tilePrefabRect.rect.width);
+
+        tile.name = "[Tile] Row: " + row + " - Column: " + column;
     }
 
     void PlaceBombs(int clickRow = 0, int clickColumn = 0)
     {
-        int bombsLeftToPlace = numberOfBombs;
+        int bombsLeftToPlace = amountOfBombs;
 
         while (bombsLeftToPlace > 0)
         {
-            int row = Random.Range(0, numberOfRows);
-            int column = Random.Range(0, numberOfColumns);
+            int row = Random.Range(0, amountOfRows);
+            int column = Random.Range(0, amountOfColumns);
 
             if (generateBombsAfterFirstClick)
             {
@@ -125,11 +174,12 @@ public class Board : MonoBehaviour
     void NotifyNeighboursAboutBombs()
     {
         // cache bombs later todo
-        for (int row = 0; row < numberOfRows; ++row)
+        for (int row = 0; row < amountOfRows; ++row)
         {
-            for (int column = 0; column < numberOfColumns; ++column)
+            for (int column = 0; column < amountOfColumns; ++column)
             {
-                if (tiles[row, column].isBomb)
+                Tile tile = GetTile(row, column);
+                if (tile != null && tile.isBomb)
                 {
                     NotifyNeighboursAboutABomb(row, column);
                 }
@@ -146,10 +196,10 @@ public class Board : MonoBehaviour
                 // We can increase the value without worring if this tile is the bomb,
                 // because if it is, we wont use it anyway
 
-                if(row >= 0 && column >= 0 && 
-                    row < numberOfRows && column < numberOfColumns)
+                Tile tile = GetTile(row, column);
+                if (tile != null)
                 {
-                    ++tiles[row, column].neighbourBombCount;
+                    ++tile.neighbourBombCount;
                 }
             }
         }
@@ -157,59 +207,189 @@ public class Board : MonoBehaviour
 
     public void OnUncoverRequested(int row, int column)
     {
-        if(!initialized && generateBombsAfterFirstClick)
+        if(!GameManager.instance.isPlaying || isUncoveringTiles)
+        {
+            return;
+        }
+
+        if(!isInitialized && generateBombsAfterFirstClick)
         {
             PlaceBombs(row, column);
             NotifyNeighboursAboutBombs();
-            initialized = true;
+            isInitialized = true;
         }
 
         Tile tile = tiles[row, column];
         if(tile.isBomb)
         {
-            // agme end
-            tile.Uncover();
-
+            UncoverAllBombs();
+            GameManager.instance.GameLost();
         }
         else
         {
-            UncoverFloodFill(row, column);
+            StartCoroutine(BeginUncoverFloodFill(row, column));
         }
     }
 
-    void UncoverFloodFill(int row, int column)
+    IEnumerator BeginUncoverFloodFill(int row, int column)
+    {
+        isUncoveringTiles = true;
+
+        yield return StartCoroutine(UncoverFloodFillIterative(row, column));
+
+        isUncoveringTiles = false;
+    }
+
+    /* unsued 
+    IEnumerator UncoverFloodFill(int row, int column)
     {
         if (row < 0 || column < 0 ||
             row >= numberOfRows || column >= numberOfColumns)
         {
-            return;
+            yield break;
         }
 
         Tile tile = tiles[row, column];
         if(tile.state == Tile.State.Uncovered)
         {
-            return;
+            yield break;
         }
 
         tile.Uncover();
         if (tile.neighbourBombCount > 0)
         {
-            return;
+            yield break;
         }
 
-        UncoverFloodFill(row - 1, column);
-        UncoverFloodFill(row + 1, column);
-        UncoverFloodFill(row, column - 1);
-        UncoverFloodFill(row, column + 1);
+        yield return new WaitForSeconds(floodFillUncoverTickTime);
+
+        yield return StartCoroutine(UncoverFloodFill(row - 1, column));
+        yield return StartCoroutine(UncoverFloodFill(row + 1, column));
+        yield return StartCoroutine(UncoverFloodFill(row, column - 1));
+        yield return StartCoroutine(UncoverFloodFill(row, column + 1));
+    }
+    */
+
+    IEnumerator UncoverFloodFillIterative(int row, int column)
+    {
+        if (row < 0 || column < 0 ||
+            row >= amountOfRows || column >= amountOfColumns)
+        {
+            yield break;
+        }
+
+        Queue<Queue<Tile>> tilesToUncover = new Queue<Queue<Tile>>();
+
+        Tile firstTile = tiles[row, column];
+        if (firstTile.state == Tile.State.Uncovered)
+        {
+            yield break;
+        }
+
+        Queue<Tile> queue = new Queue<Tile>();
+        queue.Enqueue(firstTile);
+        tilesToUncover.Enqueue(queue);
+
+        while(tilesToUncover.Count > 0)
+        {
+            Queue<Tile> dequeued = tilesToUncover.Dequeue();
+
+            queue = new Queue<Tile>();
+
+            while (dequeued.Count > 0)
+            {
+                Tile tile = dequeued.Dequeue();
+                if (tile.state == Tile.State.Uncovered)
+                {
+                    continue;
+                }
+
+                tile.Uncover();
+                if (tile.neighbourBombCount > 0)
+                {
+                    continue;
+                }
+
+                row = tile.row;
+                column = tile.column;
+
+
+                tile = GetTile(row - 1, column);
+                if (tile)
+                {
+                    queue.Enqueue(tile);
+                }
+
+                tile = GetTile(row + 1, column);
+                if (tile)
+                {
+                    queue.Enqueue(tile);
+                }
+
+                tile = GetTile(row, column - 1);
+                if (tile)
+                {
+                    queue.Enqueue(tile);
+                }
+
+                tile = GetTile(row, column + 1);
+                if (tile)
+                {
+                    queue.Enqueue(tile);
+                }
+
+            }
+
+            if (queue.Count > 0)
+            {
+                tilesToUncover.Enqueue(queue);
+            }
+
+            yield return new WaitForSecondsRealtime(floodFillUncoverTickTime);
+        }
+
+        yield return null;
+    }
+
+    /* Checked tile getter
+     * Returns tile at row and column or nullptr if out of bounds */
+    Tile GetTile(int row, int column)
+    {
+        if (row < 0 || column < 0 ||
+                  row >= amountOfRows || column >= amountOfColumns)
+        {
+            return null;
+        }
+
+        return tiles[row, column];
     }
 
     void UncoverAll()
     {
-        for (int row = 0; row < numberOfRows; ++row)
+        for (int row = 0; row < amountOfRows; ++row)
         {
-            for (int column = 0; column < numberOfColumns; ++column)
+            for (int column = 0; column < amountOfColumns; ++column)
             {
-                tiles[row, column].Uncover();
+                Tile tile = tiles[row, column];
+                if(tile != null)
+                {
+                    tile.Uncover();
+                }
+            }
+        }
+    }
+
+    void UncoverAllBombs()
+    {
+        for (int row = 0; row < amountOfRows; ++row)
+        {
+            for (int column = 0; column < amountOfColumns; ++column)
+            {
+                Tile tile = tiles[row, column];
+                if (tile != null && tile.isBomb)
+                {
+                    tile.Uncover();
+                }
             }
         }
     }
