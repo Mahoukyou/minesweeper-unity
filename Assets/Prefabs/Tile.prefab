@@ -92,21 +92,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478b9e655f943d445bed32af7b085b7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TileDefaultSprite: {fileID: 21300000, guid: 497740ea374dcdc4787014e6bb59fda5, type: 3}
-  Flagged: {fileID: 21300000, guid: 53ab3eef079b78a4585721df3e812070, type: 3}
-  Bomb: {fileID: 21300000, guid: 17867a62cf2449446ae4361b43ec21b0, type: 3}
-  UncoveredSprites:
-  - {fileID: 21300000, guid: b78200f461115664eba9c9b50d3ae5b8, type: 3}
-  - {fileID: 21300000, guid: 9b310e3740666ad4d9553b1b70b77d2f, type: 3}
-  - {fileID: 21300000, guid: 41fad22a397537a41a69ccc5fde4e279, type: 3}
-  - {fileID: 21300000, guid: d09aa411b96adb541b8e74787779223e, type: 3}
-  - {fileID: 21300000, guid: 606e7aeac7cfd4e4da01c3e5ee443fd1, type: 3}
-  - {fileID: 21300000, guid: f3af79f9e68d1db439cd8cae5043b4c0, type: 3}
-  - {fileID: 21300000, guid: a9eac0e1aa4cdd44aaa4f870875bf7f3, type: 3}
-  - {fileID: 21300000, guid: 417b7cdbf22108b4d970954183db6698, type: 3}
-  - {fileID: 21300000, guid: 2418c0330ddd76e4f9bfd1fa2f965322, type: 3}
   isBomb: 0
-  value: 0
+  neighbourBombCount: 0
 --- !u!114 &114418846620224622
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -247,7 +234,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 64, y: 64}
+  m_SizeDelta: {x: 128, y: 128}
   m_Pivot: {x: 0, y: 0}
 --- !u!224 &224832650759688760
 RectTransform:

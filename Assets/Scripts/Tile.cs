@@ -14,12 +14,6 @@ public class Tile : MonoBehaviour
 
     Board grid;
 
-    public Sprite TileDefaultSprite;
-    public Sprite Flagged;
-    public Sprite Bomb;
-    public Sprite[] UncoveredSprites;
-
-
     public bool isBomb;
     public int neighbourBombCount;
     public State state { get; private set; }
@@ -82,21 +76,21 @@ public class Tile : MonoBehaviour
         switch (newState)
         {
             case State.Normal:
-                image.sprite = TileDefaultSprite;
+                image.sprite = GameManager.instance.tileTheme.GetRandomCoveredTileSprite();
                 break;
 
             case State.Flagged:
-                image.sprite = Flagged;
+                image.sprite = GameManager.instance.tileTheme.FlagTileSprite;
                 break;
 
             case State.Uncovered:
                 if(isBomb)
                 {
-                    image.sprite = Bomb;
+                    image.sprite = GameManager.instance.tileTheme.BombTileSprite;
                 }
                 else
                 {
-                    image.sprite = UncoveredSprites[neighbourBombCount];
+                    image.sprite = GameManager.instance.tileTheme.UncoveredTileSprites[neighbourBombCount];
                 }
                 break;
         }

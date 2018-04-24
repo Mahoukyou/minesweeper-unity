@@ -45,33 +45,34 @@ public class Board : MonoBehaviour
         amountOfRows = boardDimensions[0];
         amountOfColumns = boardDimensions[1];
 
-
         InitializeBoard();
     }
 
     bool AreSettingsValid()
     {
-        int numberOfTiles = amountOfRows * amountOfColumns;
+        int totalAmountOfTiles = amountOfRows * amountOfColumns;
 
-        if(numberOfTiles <= 0 || amountOfBombs <= 0)
+        if(totalAmountOfTiles <= 0 || amountOfBombs <= 0)
         {
             return false;
         }
 
         if(generateBombsAfterFirstClick)
         {
-            if (spaceBetweenBombsAndFirstClick >= amountOfRows ||
-                spaceBetweenBombsAndFirstClick >= amountOfColumns)
+            // space * 2 (for left and right side for the space) + middle
+            int diameterOfTheSpace = spaceBetweenBombsAndFirstClick * 2 + 1;
+            if (diameterOfTheSpace >= amountOfRows ||
+                diameterOfTheSpace >= amountOfColumns)
             {
                 return false;
             }
 
-            int numberOfSpaceTiles = spaceBetweenBombsAndFirstClick > 0 ? (int)Mathf.Pow(spaceBetweenBombsAndFirstClick + 2.0f, 2.0f) : 0;
+            int amountOfSpaceTiles = spaceBetweenBombsAndFirstClick > 0 ? (int)Mathf.Pow(diameterOfTheSpace, 2.0f) : 0;
 
-            return numberOfTiles - numberOfSpaceTiles > amountOfBombs;
+            return totalAmountOfTiles - amountOfSpaceTiles > amountOfBombs;
         }
 
-        return numberOfTiles > amountOfBombs;
+        return totalAmountOfTiles > amountOfBombs;
     }
 
     void InitializeBoard()

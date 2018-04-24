@@ -190,9 +190,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b858e99b3e0d92643bdd5b025879ea23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfBombs: 55
-  numberOfRows: 25
-  numberOfColumns: 25
+  tileTheme: {fileID: 11400000, guid: d458edef0098b804494ebd6b4695a97f, type: 2}
+  numberOfBombs: 1
+  numberOfRows: 6
+  numberOfColumns: 6
   endGameMenu: {fileID: 1972369562}
   gameBoard: {fileID: 23566080}
 --- !u!4 &159423698

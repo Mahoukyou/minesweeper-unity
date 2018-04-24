@@ -6,6 +6,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance { get; private set; }
 
+    public TileTheme tileTheme;
+
     public int numberOfBombs = 5;
     public int numberOfRows = 10;
     public int numberOfColumns = 10;
@@ -19,18 +21,32 @@ public class GameManager : MonoBehaviour
     {
         isPlaying = false;
 
-        if(instance != null && instance != this)
-        {
-            Debug.LogWarning("More than one gamemanager instance");
-            Destroy(instance);
-        }
-
-        instance = this;
-	}
+        InitializeSingleton();
+        ValidateTileTheme();
+    }
 
     void Start()
     {
         BeginGame();
+    }
+
+    void InitializeSingleton()
+    {
+        if (instance != null && instance != this)
+        {
+            Debug.LogWarning("More than one Game Manager Instance");
+            Destroy(instance);
+        }
+
+        instance = this;
+    }
+
+    void ValidateTileTheme()
+    {
+        if (tileTheme == null)
+        {
+            throw new System.Exception("Missing tile theme");
+        }
     }
 
     void BeginGame()
