@@ -245,6 +245,11 @@ public class Board : MonoBehaviour
 
         yield return StartCoroutine(UncoverFloodFillIterative(row, column));
 
+        if(CheckIfFinished())
+        {
+            GameManager.instance.GameWon();
+        }
+
         isUncoveringTiles = false;
     }
 
@@ -400,5 +405,23 @@ public class Board : MonoBehaviour
                 }
             }
         }
+    }
+
+    /* return true when the game is finished (won), false if sitll playing */
+    bool CheckIfFinished()
+    {
+        for (int row = 0; row < amountOfRows; ++row)
+        {
+            for (int column = 0; column < amountOfColumns; ++column)
+            {
+                Tile tile = GetTile(row, column);
+                if(!tile.IsUncovered() && !tile.isBomb)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

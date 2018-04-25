@@ -9,7 +9,7 @@ public class AspectRatioScaler : MonoBehaviour
 
     void Start()
     {
-        int maxRowsOrCols = Mathf.Max(GameManager.instance.amountOfRows, GameManager.instance.amountOfColumns) + 1;
+        int maxRowsOrCols = Mathf.Max(GameSettings.amountOfRows, GameSettings.amountOfColumns) + 1;
         int prefsize = 128; // tmp for now
 
         GetComponent<CanvasScaler>().referenceResolution = new Vector2(prefsize * maxRowsOrCols, prefsize * maxRowsOrCols);
