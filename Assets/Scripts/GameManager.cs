@@ -8,9 +8,9 @@ public class GameManager : MonoBehaviour
 
     public TileTheme tileTheme;
 
-    public int numberOfBombs = 5;
-    public int numberOfRows = 10;
-    public int numberOfColumns = 10;
+    public int amountOfBombs = 5;
+    public int amountOfRows = 10;
+    public int amountOfColumns = 10;
 
     public EndMenu endGameMenu;
     public Board gameBoard;
@@ -51,8 +51,8 @@ public class GameManager : MonoBehaviour
 
     void BeginGame()
     {
-        int[] dim = new int[] { numberOfRows, numberOfColumns };
-        gameBoard.InitializeBoard(numberOfBombs, dim);
+        int[] dim = new int[] { amountOfRows, amountOfColumns };
+        gameBoard.InitializeBoard(amountOfBombs, dim);
 
         isPlaying = true;
     }

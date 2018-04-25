@@ -12,5 +12,10 @@ public class TileTheme : ScriptableObject
     {
         return CoveredTileSprites[Random.Range(0, CoveredTileSprites.Length)];
     }
+
+    public Sprite GetRandomUncoveredTileSprite()
+    {
+        return UncoveredTileSprites[Random.Range(0, UncoveredTileSprites.Length)];
+    }
 }
 

@@ -14,6 +14,8 @@ public class Tile : MonoBehaviour
 
     Board grid;
 
+    public Text valueText;
+
     public bool isBomb;
     public int neighbourBombCount;
     public State state { get; private set; }
@@ -38,6 +40,8 @@ public class Tile : MonoBehaviour
         this.row = row;
         this.column = column;
 
+        valueText.enabled = false;
+
         ChangeState(State.Normal);
     }
 
@@ -49,6 +53,7 @@ public class Tile : MonoBehaviour
 
     public void OnLeftClick()
     {
+        // todo
         grid.OnUncoverRequested(row, column);
     }
 
@@ -90,7 +95,12 @@ public class Tile : MonoBehaviour
                 }
                 else
                 {
-                    image.sprite = GameManager.instance.tileTheme.UncoveredTileSprites[neighbourBombCount];
+                    image.sprite = GameManager.instance.tileTheme.GetRandomUncoveredTileSprite();
+                    if (neighbourBombCount > 0)
+                    {
+                        valueText.enabled = true;
+                        valueText.text = neighbourBombCount.ToString();
+                    }
                 }
                 break;
         }
